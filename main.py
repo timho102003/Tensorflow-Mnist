@@ -5,11 +5,13 @@ import matplotlib.pyplot as plt
 # load MNIST data from tensorflow
 # if using MAC and python3.6, copy this command to terminal-->/Applications/Python\ 3.6/Install\ Certificates.command
 # to prevent the urlerror while using either keras.datasets or tensorflow.examples.tutorials.mnist
-mnist=tf.keras.datasets.mnist
-(Train_Image, Train_Label), (Test_Image, Test_Label) = mnist.load_data()
+# mnist=tf.keras.datasets.mnist
+# (Train_Image, Train_Label), (Test_Image, Test_Label) = mnist.load_data()
 #show image
-plt.imshow(Train_Image[0], cmap='binary', interpolation=None)
-plt.show()
+# plt.imshow(Train_Image[0], cmap='binary', interpolation=None)
+# plt.show()
+from tensorflow.examples.tutorials.mnist import input_data
+mnist = input_data.read_data_sets('MNIST_data', one_hot=True)
 
 # Parameters
 lr = 0.1 #learning rate
@@ -61,5 +63,14 @@ train_op = optimizer.minimize(loss)
 # Calculate Performance
 correct_pred = tf.equal(tf.argmax(prediction, 1), tf.argmax(Y, 1))
 accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32))
+
+init = tf.global_variables_initializer()
+# run training
+with tf.Session() as sess:
+    # Run Initializer to initialize all variables
+    sess.run(init)
+    # step training
+    for step in range(1, steps+1):
+        pass
 
 
