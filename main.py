@@ -14,9 +14,16 @@ from tensorflow.examples.tutorials.mnist import input_data
 mnist = input_data.read_data_sets('MNIST_data', one_hot=True)
 
 # Parameters
+import math
+import os
+model_path = './Model/'
+if not os.path.isdir(model_path):
+    os.makedirs(model_path)
+    print('Create Model Folder: {}'.format(model_path))
 lr = 0.1 #learning rate
-steps = 500
 batch_size = 36
+steps = int(math.ceil(mnist.train.images.shape[0] / batch_size))
+epochs = 10
 display_step = 100
 
 # Network Parameters Settings
@@ -36,8 +43,8 @@ Weights = {
 }
 Biases = {
     'b1': tf.Variable(tf.random_normal([n_hidden_1]), name='HIDDEN_B1'),
-    'b2': tf.Variable(tf.random_normal([n_hidden_1]), name='HIDDEN_B2'),
-    'out': tf.Variable(tf.random_normal([n_hidden_1]), name='Output_B')
+    'b2': tf.Variable(tf.random_normal([n_hidden_2]), name='HIDDEN_B2'),
+    'out': tf.Variable(tf.random_normal([num_classes]), name='Output_B')
 }
 
 def network(x):
@@ -64,24 +71,35 @@ train_op = optimizer.minimize(loss)
 correct_pred = tf.equal(tf.argmax(prediction, 1), tf.argmax(Y, 1))
 accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32))
 
+# save model
+saver = tf.train.Saver()
+
 init = tf.global_variables_initializer()
 # run training
 with tf.Session() as sess:
     # Run Initializer to initialize all variables
     sess.run(init)
     # step training
-    for step in range(1, steps+1):
-        batch_images, batch_labels = mnist.train.next_batch(batch_size=batch_size, shuffle=True)
-        sess.run(train_op, feed_dict={X: batch_images, Y: batch_labels})
-        # Display
-        if step % display_step == 0 or step ==1:
-            L, ACC = sess.run([loss, accuracy], feed_dict={X: batch_images, Y: batch_labels})
-            print('Step: {},\tLOSS: {:.3f},\tTRAIN ACCURACY: {:.3f}'.format(step, L, ACC))
+    for epoch in range(1, epochs+1):
+        for step in range(1, steps+1):
+            batch_images, batch_labels = mnist.train.next_batch(batch_size=batch_size, shuffle=True)
+            sess.run(train_op, feed_dict={X: batch_images, Y: batch_labels})
+            # Display
+            if step % display_step == 0 or step ==1:
+                L, ACC = sess.run([loss, accuracy], feed_dict={X: batch_images, Y: batch_labels})
+                print('Epoch: {},\tStep: {},\tLOSS: {:.3f},\tTRAIN ACCURACY: {:.3f}'.format(epoch, step, L, ACC))
 
+        save_path = saver.save(sess, model_path + '/model_{}.ckpt'.format(epoch))
+        print("Model saved in file: %s" % save_path)
 
+        # Calculate accuracy for MNIST validation images
+        print("Validation Accuracy: {:.3f}".format(sess.run(accuracy, feed_dict={X: mnist.validation.images,
+                                                                              Y: mnist.validation.labels})))
+    print('Finish Optimization...')
 
-# Calculate accuracy for MNIST test images
-    print("Testing Accuracy: {:.3f}".format(sess.run(accuracy, feed_dict={X: mnist.test.images, Y: mnist.test.labels})))
-
+    # Calculate accuracy for MNIST test images
+    print('Start Testing...')
+    print("Test Accuracy: {:.3f}".format(sess.run(accuracy, feed_dict={X: mnist.test.images,
+                                                                              Y: mnist.test.labels})))
 
 
