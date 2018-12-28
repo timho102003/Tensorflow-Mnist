@@ -71,6 +71,17 @@ with tf.Session() as sess:
     sess.run(init)
     # step training
     for step in range(1, steps+1):
-        pass
+        batch_images, batch_labels = mnist.train.next_batch(batch_size=batch_size, shuffle=True)
+        sess.run(train_op, feed_dict={X: batch_images, Y: batch_labels})
+        # Display
+        if step % display_step == 0 or step ==1:
+            L, ACC = sess.run([loss, accuracy], feed_dict={X: batch_images, Y: batch_labels})
+            print('Step: {},\tLOSS: {:.3f},\tTRAIN ACCURACY: {:.3f}'.format(step, L, ACC))
+
+
+
+# Calculate accuracy for MNIST test images
+    print("Testing Accuracy: {:.3f}".format(sess.run(accuracy, feed_dict={X: mnist.test.images, Y: mnist.test.labels})))
+
 
 
