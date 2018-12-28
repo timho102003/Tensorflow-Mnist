@@ -32,8 +32,34 @@ Weights = {
     'w2': tf.Variable(tf.random_normal([n_hidden_1, n_hidden_2]), name='HIDDEN_W2'),
     'out': tf.Variable(tf.random_normal([n_hidden_2,num_classes]), name='Output_W')
 }
-Bias = {
+Biases = {
     'b1': tf.Variable(tf.random_normal([n_hidden_1]), name='HIDDEN_B1'),
     'b2': tf.Variable(tf.random_normal([n_hidden_1]), name='HIDDEN_B2'),
     'out': tf.Variable(tf.random_normal([n_hidden_1]), name='Output_B')
 }
+
+def network(x):
+    '''
+    :param x: input images, shape --> batch_size x num_input
+    :return: prediction, shape --> batch_size x num_classes
+    '''
+    layer_1 = tf.add(tf.matmul(x, Weights['w1']), Biases['b1'])
+    layer_2 = tf.add(tf.matmul(layer_1, Weights['w2']), Biases['b2'])
+    out_layer = tf.add(tf.matmul(layer_2, Weights['out']), Biases['out'])
+
+    return out_layer
+
+# Model
+logits = network(X)
+prediction = tf.nn.softmax(logits) # Normalization
+
+# Define loss function and optimization
+loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=Y))
+optimizer = tf.train.AdamOptimizer(learning_rate=lr)
+train_op = optimizer.minimize(loss)
+
+# Calculate Performance
+correct_pred = tf.equal(tf.argmax(prediction, 1), tf.argmax(Y, 1))
+accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32))
+
+
